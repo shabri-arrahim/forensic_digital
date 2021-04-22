@@ -1,4 +1,234 @@
-import adbutils
+# import adbutils
+# from ppadb.client import Client as AdbClient
 
-adb = adbutils.AdbClient(host="127.0.0.1", port=5037)
-print(adb.device_list())
+# # client = AdbClient(host="127.0.0.1", port=5037)
+# # device1 = client.device("913f296")
+# # result = device.screencap()
+# # with open("screen.png", "wb") as fp:
+# #     fp.write(result)
+
+# # print(client.version())
+# # print(device1.shell("getprop ro.product.model"))
+# # print(device1.shell("getprop ro.product.name"))
+
+# client1 = adbutils.AdbClient(host="127.0.0.1", port=5037)
+# device1 = client1.device()
+
+# # print(device1)
+
+# device_information = (
+#     f"""Product Name: {device1.getprop('ro.product.name')}
+#     Product Model: {device1.getprop('ro.product.model')}
+#     Product Device: {device1.getprop('ro.product.device')}
+#     Product Version Release: {device1.getprop('ro.build.version.release')}
+#     Product Mother Board: {device1.getprop('ro.product.board')}
+#     Product CPU Version: {device1.getprop('ro.product.cpu.abi')}
+#     Product CPU Brand: {device1.getprop('ro.product.cpu.abi2')}
+#     Product Manufacture: {device1.getprop('ro.product.manufacturer')}
+#     Product IP Address: {device1.getprop('dhcp.wlan0.ipaddress')}"""
+# )
+
+# print(device_information)
+
+# # Installed package list
+# print(device1.shell("pm list packages -f -3"))
+
+# # Memory Info
+# # print(device1.shell("cat /proc/meminfo"))
+
+# # print(device1.shell("cat /proc/meminfo"))
+
+# # for app in device1.shell("pm list packages -f -3"):
+# #     print(device1.pull(f"$( echo ${app} | sed 's/^package://' | sed 's/base.apk=/base.apk /').apk", "digital.apk"))
+
+# # for app in device1.shell("pm list packages -f -3"):
+# # print(device1.shell(f"backup -apk -shared -all -f {app}/backup.ab"))    
+# print(device1.shell("run-as com.corp.whatsapp cat /data/data/com.corp.whatsapp/databases/data.db"))
+
+#!/usr/bin/python
+# -*- coding:utf8 -*-
+
+
+# 
+# ab_unpacker.py (Android Backup Unpacker)
+#
+# Performs adb backup of an android application and decompresses
+#
+
+import pexpect
+import optparse
+import sys
+import os
+import errno
+from time import sleep
+
+def main():
+
+	usage = "\n%prog [options] arguments"
+	version = "v1.3 - @ChrisJohnRiley"
+	logo(version)
+
+	parser = optparse.OptionParser(usage=usage, version=version)
+
+	parser.add_option("-p", "--package", dest="package", help="Android Package to backup")
+	parser.add_option("-f", "--file", dest="file", help="Unpack existing AB file")
+	parser.add_option("-b", "--backfile", dest="backfile", help="Backup destination filename")
+	parser.add_option("-u", "--unpackdir", dest="unpackdir", help="Optional: Unpack destination")
+	parser.add_option("-l", "--list", dest="list", help="Create Tar List file for repacking", action="store_true")
+	parser.add_option("-a", "--apk", dest="apk", help="Include APK in backup", action="store_true")
+	parser.add_option("-v", "--verbose", dest="verbose", help="Verbose output", action="store_true")
+	parser.add_option("-x", "--overwrite", dest="overwrite", help="Overwrite files/directories", action="store_true")
+
+	global opts
+	(opts, args) = parser.parse_args()
+
+
+	if opts.package and opts.backfile:
+		print("\n [ ] Starting script to backup %s to %s") % (opts.package, opts.backfile)
+	elif opts.file:
+		print("\n [ ] Using existing .ab file %s") % opts.file
+		opts.backfile = opts.file
+		opts.package = opts.file.split(".")[0]
+	else:
+		print("\n [X] Required arguements [package] and [backfile] not provided\n")
+		parser.print_help()
+		print("\n")
+		sys.exit(0)
+
+	if opts.overwrite:
+		print("\n [!] Overwriting enabled -\n")
+		print("\t - existing backup data will be overwritten")
+		print("\t - existing files within the unpack directory will be overwritten\n")
+
+	setup()
+	checks()
+	if not opts.file:
+		backup()
+	decode()
+	if opts.list:
+		create_list()
+	extract()
+	if opts.verbose:
+		# output summary of extracted files
+		summary()
+
+	print("\n [ ] Script completed...\n\n")
+
+def logo(version):
+	print(f'''
+       _                                  _             
+      | |                                | |            
+  __ _| |__  _   _ _ __  _ __   __ _  ___| | _____ _ __ 
+ / _` | '_ \| | | | '_ \| '_ \ / _` |/ __| |/ / _ \ '__|
+| (_| | |_) | |_| | | | | |_) | (_| | (__|   <  __/ |   
+ \__,_|_.__/ \__,_|_| |_| .__/ \__,_|\___|_|\_\___|_|   
+         ______         | |                             
+        |_/_//_|        |_|   {version}''')
+
+def setup():
+
+	# setup variables for the script
+	opts.adbbackup = 'adb backup ' + opts.package + ' -f ' + opts.backfile
+	if opts.apk:
+		# add apk to backup
+		opts.adbbackup = opts.adbbackup + ' -apk'
+	if not opts.unpackdir:
+		# set backup directory to pacakge name
+		opts.unpackdir = opts.package
+
+def checks():
+
+	if not opts.overwrite:
+
+		# check if file and/or directory exist already
+		if os.path.exists(opts.backfile) and not opts.file:
+			print(" [X] Target of backup: %s already exists\n") % opts.backfile
+			sys.exit(1)
+	
+		if os.path.exists(opts.unpackdir):
+			print(" [X] Target directory: %s already exists\n") % opts.unpackdir
+			sys.exit(1)
+
+	# check openssl zlib support
+	child = pexpect.spawn ('openssl -help')
+	i = child.expect ('zlib')
+
+	if i==1:
+		print(" [X] Openssl Version does not support zlib")
+		sys.exit(1)
+
+def backup():
+
+	print(" [>] Accept backup prompt on Android device to continue...\n")
+	child = pexpect.spawn(opts.adbbackup)
+
+	# check if adb errored out - can't use expect due to stderr?
+	for line in child:
+		if "unable to connect for backup" in line:
+			print(" [X] ADB is unable to detect an Android device - cancelling backup\n")
+			sys.exit(1)
+		else:
+			print(line)
+
+	# check if backup was created
+	child = pexpect.spawn ('ls ' + opts.backfile)
+	i = child.expect (opts.backfile)
+
+	if i==0:
+		if os.stat(opts.backfile).st_size < 42:
+			print(" [X] Resulting Android Backup file is empty - check application name")
+			sys.exit(1)	
+		else:
+			print("\n [ ] Android Backup file (%s) created") % opts.backfile
+	else:
+		print(" [X] Error creating Android Backup file")
+		sys.exit(1)
+
+def decode():
+
+	# check if opts.file set, if so use it
+	if opts.file: opts.backfile = opts.file
+
+	# decode Android Backup using dd and openssl zlib
+	print(" [ ] Creating directory %s and unpacking Android Backup (%s)") % (opts.unpackdir, opts.backfile)
+
+	# create directory if it doesn't already exist
+	if not os.path.exists(opts.unpackdir):
+		os.mkdir(opts.unpackdir)
+
+	# convert ab to tar
+	child = pexpect.spawn ('/bin/bash -c "dd if=' + opts.backfile + ' bs=24 skip=1 | openssl zlib -d > ' + opts.backfile + '.tar"')
+	i = child.expect('records out')
+
+	if i==1:
+		print(" [X] Unable to decompress Android Backup file (%s)") % opts.backfile
+		sys.exit(1)
+
+	if not os.path.exists(opts.backfile + '.tar'):
+		print(" [X] Unable to create TAR file (%s)") % (opts.backfile + '.tar')
+		sys.exit(1)
+
+def create_list():
+
+	# create list from TAR file (for use in repacking)
+	print(" [ ] Creating filelist from TAR file (%s)") % (opts.backfile + '.tar.list')
+	child = pexpect.spawn ('/bin/bash -c "tar -tf ' + opts.backfile + '.tar > ' + opts.backfile + '.tar.list"')
+
+def extract():
+
+	# extract tar to destination directory
+	child = pexpect.spawn ('tar -xvf' + opts.backfile + '.tar -C' + opts.unpackdir +'/')
+	print("\n [>] Expanding Android Backup (TAR) to ./%s\n") % opts.unpackdir
+	for line in child:
+		if opts.verbose and not line.startswith("/bin/tar:"):
+			# print non-informational lines
+			print(" [>] Creating: ./%s/%s") % (opts.unpackdir, line),
+
+def summary():
+	child = pexpect.spawn ('tree -a -x ' + opts.unpackdir)
+	print("\n [ ] Summary of extracted contents (%s):\n") % opts.unpackdir
+	for line in child:
+		print('\t' + line)
+
+if __name__ == "__main__":
+   main()
