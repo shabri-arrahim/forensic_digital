@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>535</width>
-    <height>389</height>
+    <width>582</width>
+    <height>444</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,33 +40,78 @@
      <string>Inspect</string>
     </property>
    </widget>
-   <widget class="QListView" name="listDevice">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>10</y>
-      <width>281</width>
-      <height>181</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QListView" name="listLog">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>200</y>
-      <width>511</width>
+      <x>20</x>
+      <y>260</y>
+      <width>551</width>
       <height>141</height>
      </rect>
     </property>
    </widget>
+   <widget class="QTableView" name="tableDevice">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>40</y>
+      <width>411</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+    <property name="tabletTracking">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="tableDeviceLabel">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>20</y>
+      <width>91</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Active Devices</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="listLoglabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>240</y>
+      <width>47</width>
+      <height>13</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Status</string>
+    </property>
+   </widget>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>535</width>
+     <width>582</width>
      <height>21</height>
     </rect>
    </property>
@@ -77,7 +122,6 @@
    </widget>
    <addaction name="menuFile"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>

@@ -1,50 +1,3 @@
-# import adbutils
-# from ppadb.client import Client as AdbClient
-
-# # client = AdbClient(host="127.0.0.1", port=5037)
-# # device1 = client.device("913f296")
-# # result = device.screencap()
-# # with open("screen.png", "wb") as fp:
-# #     fp.write(result)
-
-# # print(client.version())
-# # print(device1.shell("getprop ro.product.model"))
-# # print(device1.shell("getprop ro.product.name"))
-
-# client1 = adbutils.AdbClient(host="127.0.0.1", port=5037)
-# device1 = client1.device()
-
-# # print(device1)
-
-# device_information = (
-#     f"""Product Name: {device1.getprop('ro.product.name')}
-#     Product Model: {device1.getprop('ro.product.model')}
-#     Product Device: {device1.getprop('ro.product.device')}
-#     Product Version Release: {device1.getprop('ro.build.version.release')}
-#     Product Mother Board: {device1.getprop('ro.product.board')}
-#     Product CPU Version: {device1.getprop('ro.product.cpu.abi')}
-#     Product CPU Brand: {device1.getprop('ro.product.cpu.abi2')}
-#     Product Manufacture: {device1.getprop('ro.product.manufacturer')}
-#     Product IP Address: {device1.getprop('dhcp.wlan0.ipaddress')}"""
-# )
-
-# print(device_information)
-
-# # Installed package list
-# print(device1.shell("pm list packages -f -3"))
-
-# # Memory Info
-# # print(device1.shell("cat /proc/meminfo"))
-
-# # print(device1.shell("cat /proc/meminfo"))
-
-# # for app in device1.shell("pm list packages -f -3"):
-# #     print(device1.pull(f"$( echo ${app} | sed 's/^package://' | sed 's/base.apk=/base.apk /').apk", "digital.apk"))
-
-# # for app in device1.shell("pm list packages -f -3"):
-# # print(device1.shell(f"backup -apk -shared -all -f {app}/backup.ab"))    
-# print(device1.shell("run-as com.corp.whatsapp cat /data/data/com.corp.whatsapp/databases/data.db"))
-
 #!/usr/bin/python
 # -*- coding:utf8 -*-
 
@@ -54,6 +7,7 @@
 #
 # Performs adb backup of an android application and decompresses
 #
+
 
 import pexpect
 import optparse

@@ -50,13 +50,23 @@ class Ui_MainWindow(object):
         self.btnBackup.setText(_translate("MainWindow", "BackUp"))
         self.btnInspect.setText(_translate("MainWindow", "Inspect"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+    
+    def set_btn_inspect_listener(self, btn_inspect_acction):
+        self.btnInspect.connect(btn_inspect_acction)
+    
+    def set_btn_backup_listener(self, btn_backup_acction):
+        self.btnBackup.connect(btn_btnBackup_acction)
+    
+    def set_list_item(self, entries):
+        model = QtGui.QStandardItemModel()
+        self.listDevice.setFlow(QtWidgets.QListView.LeftToRight)
+        self.listDevice.setModel(model)
+        
+        for value in entries['value']:
+            item = QtGui.QStandardItem(value)
+            model.appendRow(item)
+        
+        # for col in entries['column']:
+        #     item = QtGui.QStandardItem(col)
+        #     model.appendColumn(item)
+            

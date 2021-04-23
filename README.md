@@ -8,7 +8,19 @@ https://github.com/labcif/FAMA
 https://github.com/Swind/pure-python-adb
 https://programmersought.com/article/7975303078/
 
-# Useful Commad
+# Useful Command
 https://gist.github.com/Pulimet/5013acf2cd5b28e55036c82c91bd56d8
 https://www.programmersought.com/article/65834286369/
 https://gist.github.com/AnatomicJC/e773dd55ae60ab0b2d6dd2351eb977c1
+
+
+# Quick Run
+
+Access project folder
+ > cd forensic_digital
+
+Install requirement
+ > pip install requirements.txt
+
+Run program
+ > python main.py
